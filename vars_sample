@@ -1,0 +1,13 @@
+# ローカル開発用の.dev.vars
+# Google OAuth クライアントID（フロントエンドと同じ値なので隠す必要はないが一応）
+GOOGLE_CLIENT_ID=1234567890-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com
+
+# GitHubのPersonal Access Token
+# スコープ: repo（Public/Private問わずpushしたい場合）
+# Settings > Developer settings > Personal access tokens > Tokens (classic) で発行
+GITHUB_TOKEN=ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+# 以上のsecretsはCloudflare Workers 本番環境には以下で登録します
+# wrangler secret put GOOGLE_CLIENT_ID
+# wrangler secret put GITHUB_TOKEN
+

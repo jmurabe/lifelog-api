@@ -1,0 +1,24 @@
+{
+	"name": "lifelog-api",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev --ip=0.0.0.0",
+		"start": "wrangler dev --ip=0.0.0.0",
+		"test": "vitest",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.8.19",
+		"typescript": "^5.5.2",
+		"vitest": "~3.2.0",
+		"wrangler": "^4.25.1"
+	},
+	"dependencies": {
+		"google-id-token-verifier": "^0.2.3",
+		"hono": "^4.8.5",
+		"jose": "^6.0.12",
+		"undici": "^7.12.0"
+	}
+}
