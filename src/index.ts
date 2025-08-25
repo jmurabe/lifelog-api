@@ -5,15 +5,36 @@ import { verify } from 'google-id-token-verifier'
 const app = new Hono()
 app.use('*', cors())
 
-// 日時ベースのファイル名生成
+// カテゴリマッピング
+const CATEGORY_MAP: Record<string, string> = {
+  '雑記': 'misc',
+  '食事': 'meals',
+  'フィットネス': 'fitness',
+}
+
+// 日時ベースのファイル名生成 (YYYYMMDD-HHmm.md)
+// 日付文字列の"見た目"をそのまま使ってファイル名を作る（TZ非依存）
 function generateFilename(dateString: string) {
-  const dt = new Date(dateString)
-  const yyyy = dt.getFullYear()
-  const mm = String(dt.getMonth() + 1).padStart(2, '0')
-  const dd = String(dt.getDate()).padStart(2, '0')
-  const hh = String(dt.getHours()).padStart(2, '0')
-  const mi = String(dt.getMinutes()).padStart(2, '0')
-  return `${yyyy}${mm}${dd}-${hh}${mi}.md`
+  const iso = (dateString || '').trim();
+  // 例: 2025-08-19T13:30[:ss][+09:00|Z]
+  const m = iso.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:Z|[+-]\d{2}:\d{2})?$/
+  );
+  if (m) {
+    const [, yyyy, MM, dd, HH, mm, ss] = m;
+    return `${yyyy}${MM}${dd}-${HH}${mm}.md`;
+  }
+
+  // フォールバック（非ISOな文字列が来た場合）
+  const d = new Date(dateString);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const y = d.getFullYear();
+  const M = pad(d.getMonth() + 1);
+  const D = pad(d.getDate());
+  const H = pad(d.getHours());
+  const Mi = pad(d.getMinutes());
+  const S = pad(d.getSeconds());
+  return `${y}${M}${D}-${H}${Mi}.md`;
 }
 
 app.post('/api/post', async (c) => {
@@ -31,12 +52,16 @@ app.post('/api/post', async (c) => {
   const body = await c.req.json()
   const { title, date, tags, categories, latitude, longitude, content } = body
 
-  if (!title || !date || !content) {
+  if (!title || !date || !content || !categories?.length) {
     return c.json({ error: 'Missing required fields' }, 400)
   }
 
-  // ファイル名生成
-  const filename = `content/posts/${generateFilename(date)}`
+  // カテゴリ変換（マッピングされていなければ "misc"）
+  const category = categories[0]
+  const categorySlug = CATEGORY_MAP[category] || 'misc'
+
+  // ファイルパス生成
+  const filename = `content/posts/${categorySlug}/${generateFilename(date)}`
 
   // front matterはcontentに既に含まれている想定（フロント側生成）
   const fileContent = content.trim()
